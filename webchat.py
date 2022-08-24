@@ -3,7 +3,7 @@
 #               Juan Carlos Argueta
 #
 
-from mycroft.configuration import ConfigurationManager
+from mycroft.configuration import Configuration
 from mycroft.messagebus.service.ws import WebsocketEventHandler
 from mycroft.util import validate_param, create_signal
 
@@ -145,8 +145,8 @@ def main():
     import tornado.options
 
     tornado.options.parse_command_line()
-    config = ConfigurationManager.get().get("websocket")
-    lang = ConfigurationManager.get().get("lang")
+    config = Configuration.get().get("websocket")
+    lang = Configuration.get().get("lang")
 
     port = "9090"
     url = ("http://" + str(ip) + ":" + str(port))
