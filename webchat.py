@@ -4,17 +4,14 @@
 #
 
 from mycroft.configuration import Configuration
-from mycroft.messagebus.service.ws import WebsocketEventHandler
-from mycroft.util import validate_param, create_signal
+from mycroft.util import create_signal
+from mycroft_bus_client import MessageBusClient, Message
 
 __author__ = 'jcasoft'
 
-
-from mycroft.messagebus.client.ws import WebsocketClient
-from mycroft.messagebus.message import Message
 from threading import Thread
 
-ws = None
+client = None
 
 import tornado.httpserver
 import tornado.websocket
@@ -70,14 +67,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                         "session": "",
                         "utterances": [utterance],
                         "client": "WebChat"}
-                    ws.emit(Message('chat_response', data))
-                    ws.emit(Message('recognizer_loop:utterance', data))
+                    client.emit(Message('chat_response', data))
+                    client.emit(Message('recognizer_loop:utterance', data))
                 else:
                     data = {
                         "lang": lang,
                         "session": "",
                         "utterances": [utterance]}
-                    ws.emit(Message('recognizer_loop:utterance', data))
+                    client.emit(Message('recognizer_loop:utterance', data))
 
                 t = Thread(target=self.newThread)
                 t.start()
@@ -118,7 +115,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
 
 def connect():
-    ws.run_forever()
+    client.run_forever()
 
 
 def handle_speak(event):
@@ -134,18 +131,17 @@ def main():
     wait_response = True
     skill_response = ""
 
-    global ws
-    ws = WebsocketClient()
+    global client
+    client = MessageBusClient()
     event_thread = Thread(target=connect)
     event_thread.setDaemon(True)
     event_thread.start()
 
-    ws.on('speak', handle_speak)
+    client.on('speak', handle_speak)
 
     import tornado.options
 
     tornado.options.parse_command_line()
-    config = Configuration.get().get("websocket")
     lang = Configuration.get().get("lang")
 
     port = "9090"
